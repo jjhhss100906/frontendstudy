@@ -32,7 +32,7 @@ history api를 사용하지 않아서 동적 페이지에 불리하다.
 **장점**
 * 배포가 매우 쉽다: 서버 환경을 마음대로 제어할 수 없는 무료 호스팅 사이트나 정적 파일 스토리지만 제공하는 환경에 좋다.    
 * 안정적이다: 주소가 어떻게 바뀌든 무조건 서버는 루트만 바라봐서 경로 이탈 에러가 절대 나지 않는다.  
-
+ 
 **단점**
 * 주소가 못생김: 주소창 중간에 갑자기 # 이 들어가서 비전문적이고 지저분해 보일수있다.
 * 검색엔진이 읽지 못함: 구글이나 네이버같은 검색로봇은 # 뒷부분을 인식하지 않거나 무시하는 경우가 많다.즉, 아무리 좋은글을 써도 검색엔진 결과에 안뜰수있다.
@@ -58,6 +58,8 @@ history api를 사용하지 않아서 동적 페이지에 불리하다.
 **약점**
 * 새로고침시 발생하는 404에러    
 해결하기 위해서는 리다이렉션 설정을 추가해야한다.
+
+Fallback이란: 원래 하려던 기능이나 계획이 실패하거나 작동하지 않을 때, 시스템 중단을 막고 서비스 연속성을 유지하기 위해 대신 사용하는 대체 동작, 값 또는 기술을 말함. 예를 들어, 5G에서 통화가 원활하지 않을때 LTE로 변환해서 통화가 안끊기게 하는 방법을 말함.
 
 
 ## React-Router-Dom
@@ -241,212 +243,9 @@ function DetailCard() {
 React Router를 쓰는 이유가 새로고침 없이 화면을 바꾸기 위해서이기 때문이다.    
 하지만 정말로 문서 전체를 다시 불러와야 하는 특별한 상황에서는 사용할 수 있다.
 
-### Link와 a태그 차이
-
-* `a`태그는 이동할 때 페이지 전체가 새로고침된다.    
-* `Link`는 페이지 전체를 새로고침하지 않고, 주소만 바꾼 뒤 Route에 맞는 컴포넌트만 다시 보여준다.    
-* 그래서 React로 만든 SPA에서는 내부 페이지 이동을 할 때 `a`태그보다 `Link`를 사용하는 것이 좋다.
-
-```
-// 일반 a태그
-<a href="/gallery">갤러리</a>
-
-// React Router Link
-<Link to="/gallery">갤러리</Link>
-```
-
-정리하면 `Link`는 React Router 안에서 새로고침 없이 페이지를 이동시켜주는 컴포넌트이다.    
-그리고 `to`속성으로 이동할 주소를 정하고, 필요에 따라 `replace`, `state`, `preventScrollReset` 같은 옵션을 같이 사용할 수 있다.
-
 ## 중첩 라우팅
 
-중첩 라우팅은 특정 페이지 안에서 또 다른 하위 페이지를 보여주고 싶을 때 사용하는 기능이다.    
-예를 들어 `/about` 페이지 안에 `/about/location` 같은 하위 주소를 만들 수 있다.
-
-```
-<Route path="/about" element={<About />}>
-  <Route path="location" element={<Location />} />
-</Route>
-```
-
-위 코드처럼 `Route` 안에 또 다른 `Route`를 넣으면 `/about/location` 주소가 만들어진다.    
-이 주소로 이동하면 부모 컴포넌트인 `About`도 렌더링되고, 자식 컴포넌트인 `Location`도 같이 렌더링된다.
-
-중첩 라우팅의 장점은 부모 페이지의 내용은 그대로 두고, 특정 부분만 하위 페이지 내용으로 바꿀 수 있다는 점이다.
-
-## Outlet
-
-`Outlet`은 중첩 라우팅에서 자식 Route 컴포넌트가 들어갈 자리를 정해주는 컴포넌트이다.
-
-```
-import { Outlet } from "react-router-dom";
-
-function About() {
-  return (
-    <div>
-      <h2>여기는 About 페이지입니다.</h2>
-      <p>대충 쇼핑몰 페이지라는 뜻</p>
-
-      <Outlet />
-    </div>
-  );
-}
-```
-
-라우터에서 `/about/location` 주소가 매칭되면 `About` 컴포넌트가 먼저 렌더링되고,    
-`<Outlet />` 자리에 `Location` 컴포넌트가 들어가게 된다.
-
-즉, `Outlet`은 자식 페이지를 보여줄 위치를 표시하는 자리라고 생각하면 된다.
-
-## Outlet 없이 중첩 라우팅하기
-
-`Outlet` 없이도 중첩 라우팅을 만들 수 있다.    
-이때는 부모 Route의 path 뒤에 `*`을 붙여서 하위 경로도 받을 수 있게 해준다.
-
-```
-<Routes>
-  <Route path="/" element={<Home />} />
-  <Route path="/about/*" element={<About />} />
-  <Route path="/products" element={<Products />} />
-</Routes>
-```
-
-그리고 `About` 컴포넌트 안에서 다시 `Routes`와 `Route`를 작성한다.
-
-```
-function About() {
-  return (
-    <div>
-      <h2>여기는 About 페이지입니다.</h2>
-      <p>대충 쇼핑몰 페이지라는 뜻</p>
-
-      <Routes>
-        <Route path="location" element={<Location />} />
-      </Routes>
-    </div>
-  );
-}
-```
-
-이렇게 해도 중첩 라우팅처럼 동작한다.    
-다만 React Router에서는 보통 `Outlet`을 사용하는 방식이 더 깔끔하고 많이 사용된다.
-
-## Params
-
-Params는 주소를 통해 데이터를 전달하는 방식이다.    
-크게 `url 파라미터`와 `쿼리스트링`으로 나눌 수 있다.
-
-### url 파라미터
-
-url 파라미터는 주소 경로 안에 값을 넣는 방식이다.
-
-```
-주소: http://hello.com/new/1234
-
-<Route path="/new/:id" element={<NewId />} />
-```
-
-여기서 `:id` 부분이 url 파라미터이다.    
-실제 주소가 `/new/1234`라면 `id` 값으로 `1234`를 받을 수 있다.
-
-보통 특정 게시글, 특정 유저, 특정 상품처럼 하나의 데이터를 조회할 때 많이 사용한다.
-
-### 쿼리스트링
-
-쿼리스트링은 주소 뒤에 `?`와 `&`를 사용해서 key와 value 형태로 데이터를 전달하는 방식이다.
-
-```
-주소: /products?keyword=phone&page=2
-```
-
-여기서 `keyword` 값은 `phone`, `page` 값은 `2`이다.    
-보통 검색어, 페이지 번호, 정렬 방식처럼 조회 옵션을 전달할 때 많이 사용한다.
-
-### url 파라미터와 쿼리스트링 차이
-
-* url 파라미터: 특정 id, 이름, 게시글 번호처럼 정확히 하나의 데이터를 찾을 때 사용한다.    
-* 쿼리스트링: 검색어, 페이지네이션, 정렬 방식처럼 데이터를 조회하는 옵션을 전달할 때 사용한다.
-
-## useParams
-
-`useParams`는 url 파라미터 값을 가져올 때 사용하는 Hook이다.
-
-```
-import { useParams } from "react-router-dom";
-
-function NewId() {
-  const { id } = useParams();
-
-  return (
-    <div>
-      <p>현재 유저의 아이디는 {id} 입니다.</p>
-    </div>
-  );
-}
-```
-
-라우터가 아래처럼 되어 있고,
-
-```
-<Route path="/new/:id" element={<NewId />} />
-```
-
-사용자가 `/new/1234`로 이동하면 `useParams()`를 통해 `id` 값으로 `1234`를 받을 수 있다.
-
-여러 개의 값도 받을 수 있다.
-
-```
-<Route path="/new/:id/:lastId" element={<NewId />} />
-```
-
-주소가 `/new/1234/1212`라면 `id`는 `1234`, `lastId`는 `1212`가 된다.
-
-## useSearchParams
-
-`useSearchParams`는 쿼리스트링을 읽거나 수정할 때 사용하는 Hook이다.    
-`useState`와 비슷하게 배열 형태로 값을 받는다.
-
-```
-import { useSearchParams } from "react-router-dom";
-
-function Products() {
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const keyword = searchParams.get("keyword");
-  const page = searchParams.get("page");
-
-  return (
-    <div>
-      <p>검색어: {keyword}</p>
-      <p>페이지: {page}</p>
-    </div>
-  );
-}
-```
-
-주소가 `/products?keyword=phone&page=2`라면    
-`keyword`는 `phone`, `page`는 `2`가 된다.
-
-자주 사용하는 메서드는 다음과 같다.
-
-* `searchParams.get(key)`: 해당 key의 첫 번째 value를 가져온다.    
-* `searchParams.getAll(key)`: 해당 key에 해당하는 모든 value를 가져온다.    
-* `searchParams.set(key, value)`: 해당 key의 값을 value로 바꾼다.    
-* `searchParams.append(key, value)`: 기존 값을 유지하면서 새 값을 추가한다.
-
-쿼리스트링을 실제 주소에 반영하려면 `setSearchParams`를 사용해야 한다.
-
-```
-searchParams.set("page", "3");
-setSearchParams(searchParams);
-```
-
-정리하면 `useParams`는 `/new/1234`처럼 주소 경로에 들어있는 값을 꺼낼 때 사용하고,    
-`useSearchParams`는 `/products?keyword=phone&page=2`처럼 `?` 뒤에 붙은 값을 꺼내거나 바꿀 때 사용한다.
-
-## 중첩 라우팅
-
-개인적으로 React-router-dom 내장 기능 중 가장 유용하게 사용하고 있는 기능이다. 특정 페이지 내에서 하위 페이지를 만들 수 있고, 해당 페이지마다 경로를 이용한 데이터 전달도 가능하다.
+React-router-dom 내장 기능 중 가장 유용하게 사용되고 있는 기능이다. 특정 페이지 내에서 하위 페이지를 만들 수 있고, 해당 페이지마다 경로를 이용한 데이터 전달도 가능하다.
 
 또한 중첩 라우팅을 구현할 경우 해당 하위 페이지 이외에는 컨텐츠가 바뀌지 않는다.
 
@@ -456,7 +255,7 @@ setSearchParams(searchParams);
 </Route>
 ```
 
-라우터 내부에 위와 같이 자식 요소 Route를 만들어준다. 이렇게만 설정해도 라우터 내부적으로는 `/about` 주소 하위에 `/location` 이라는 하위 라우팅이 되었다고 판단한다. 따라서 우리가 `/about/location`으로 주소를 이동할 경우, 주어진 `Location` 컴포넌트가 렌더링되는 것이다. 물론 `About` 컴포넌트도 같이 렌더링된다.
+라우터 내부에 위와 같이 자식 요소 Route를 만들어준다.  설정해도 라우터 내부적으로는 `/about` 주소 하위에 `/location` 이라는 하위 라우팅이 되었다고 판단한다. 따라서 우리가 `/about/location`으로 주소를 이동할 경우, 주어진 `Location` 컴포넌트가 렌더링되는 것이다. 물론 `About` 컴포넌트도 같이 렌더링된다.
 
 물론 라우터에서 위와 같이 설정한 것 만으로는 아무런 변화가 생기지 않는다.
 
@@ -600,6 +399,12 @@ const [searchParams, setSearchParams] = useSearchParams();
 
 
 
+
+
+ 
+
+ .0.
+ 
 
 
 
